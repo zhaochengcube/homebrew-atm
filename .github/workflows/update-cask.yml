@@ -1,0 +1,102 @@
+name: Update ATM Cask
+
+on:
+  repository_dispatch:
+    types: [atm_release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.5.2)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      REPO_OWNER: zhaochengcube
+      MAIN_REPO: augment-token-mng
+    steps:
+      - name: Checkout tap repo
+        uses: actions/checkout@v4
+
+      - name: Resolve tag and version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            TAG="${{ github.event.client_payload.tag }}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+
+          if [ -z "$TAG" ]; then
+            echo "TAG is required" >&2
+            exit 1
+          fi
+
+          VERSION="${TAG#v}"
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "ARM_URL=https://github.com/${REPO_OWNER}/${MAIN_REPO}/releases/download/${TAG}/ATM_${VERSION}_aarch64.dmg" >> $GITHUB_ENV
+          echo "INTEL_URL=https://github.com/${REPO_OWNER}/${MAIN_REPO}/releases/download/${TAG}/ATM_${VERSION}_x64.dmg" >> $GITHUB_ENV
+
+      - name: Download DMG artifacts
+        run: |
+          set -euxo pipefail
+          curl -L "$ARM_URL"   -o "ATM_${VERSION}_aarch64.dmg"
+          curl -L "$INTEL_URL" -o "ATM_${VERSION}_x64.dmg"
+
+      - name: Compute SHA256
+        run: |
+          set -euo pipefail
+          if command -v shasum >/dev/null 2>&1; then
+            SHA_ARM=$(shasum  -a 256 "ATM_${VERSION}_aarch64.dmg" | awk '{print $1}')
+            SHA_INT=$(shasum  -a 256 "ATM_${VERSION}_x64.dmg"      | awk '{print $1}')
+          else
+            SHA_ARM=$(sha256sum      "ATM_${VERSION}_aarch64.dmg" | awk '{print $1}')
+            SHA_INT=$(sha256sum      "ATM_${VERSION}_x64.dmg"      | awk '{print $1}')
+          fi
+          echo "SHA_ARM=$SHA_ARM" >> $GITHUB_ENV
+          echo "SHA_INT=$SHA_INT" >> $GITHUB_ENV
+
+      - name: Update Cask file
+        run: |
+          cat > Casks/atm.rb <<RUBY
+          cask "atm" do
+            version "${VERSION}"
+
+            arch arm: "aarch64", intel: "x64"
+
+            url "https://github.com/zhaochengcube/augment-token-mng/releases/download/v\#{version}/ATM_\#{version}_\#{arch}.dmg"
+            name "ATM"
+            desc "Augment Token Manager - Token management tool for Augment Code"
+            homepage "https://github.com/zhaochengcube/augment-token-mng"
+
+            sha256 arm:   "${SHA_ARM}",
+                   intel: "${SHA_INT}"
+
+            app "ATM.app"
+
+            zap trash: [
+              "~/Library/Application Support/com.cubezhao.atm",
+              "~/Library/Caches/com.cubezhao.atm",
+              "~/Library/Preferences/com.cubezhao.atm.plist",
+            ]
+          end
+          RUBY
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/atm.rb
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(cask): update atm to ${VERSION}"
+          git push
