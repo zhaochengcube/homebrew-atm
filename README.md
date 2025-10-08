@@ -10,7 +10,3 @@ brew upgrade --cask atm
 Uninstall
 brew uninstall --cask atm
 ```
-
-
-
-```
