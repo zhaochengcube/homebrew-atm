@@ -3,7 +3,7 @@ cask "atm" do
 
   arch arm: "aarch64", intel: "x64"
 
-  url "https://github.com/zhaochengcube/augment-token-mng/releases/download/v\#{version}/ATM_\#{version}_\#{arch}.dmg"
+  url "https://github.com/zhaochengcube/augment-token-mng/releases/download/v#{version}/ATM_#{version}_#{arch}.dmg"
   name "ATM"
   desc "Augment Token Manager - Token management tool for Augment Code"
   homepage "https://github.com/zhaochengcube/augment-token-mng"
