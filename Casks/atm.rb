@@ -13,9 +13,21 @@ cask "atm" do
 
   app "ATM.app"
 
+  # 安装后自动移除 Gatekeeper 的隔离标记
+  postflight do
+    system_command "/usr/bin/xattr",
+      args: ["-dr", "com.apple.quarantine", "#{appdir}/ATM.app"],
+      sudo: true
+  end
+
   zap trash: [
     "~/Library/Application Support/com.cubezhao.atm",
     "~/Library/Caches/com.cubezhao.atm",
     "~/Library/Preferences/com.cubezhao.atm.plist",
   ]
+
+  caveats <<~EOS
+    If Gatekeeper still blocks the app, try:
+      sudo xattr -dr com.apple.quarantine "#{appdir}/ATM.app"
+  EOS
 end
