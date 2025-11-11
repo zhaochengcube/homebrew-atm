@@ -1,5 +1,5 @@
 cask "atm" do
-  version "1.3.2"
+  version "1.3.3"
 
   arch arm: "aarch64", intel: "x64"
 
@@ -8,8 +8,8 @@ cask "atm" do
   desc "Augment Token Manager - Token management tool for Augment Code"
   homepage "https://github.com/zhaochengcube/augment-token-mng"
 
-  sha256 arm:   "fde1a66b6e0387b8dcbff579e3b3ed30f9b1d8bc3dcac2bd47638eb942593f8e",
-         intel: "99c5ebb9c5d23e883cc4adce12e42be378af55b5ff6172390d384f450446a8c7"
+  sha256 arm:   "5eeaa0b2d3e05afb3193c9fdc407ef7cfa19cf0e706e5ee0cdc6cc772357dfe5",
+         intel: "2315cba2ecc4137aeac00088f2c550b0215c290aa6879e7657eadce4ac5b956b"
 
   app "ATM.app"
 
