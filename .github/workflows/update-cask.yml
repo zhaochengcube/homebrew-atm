@@ -17,7 +17,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     env:
-      REPO_OWNER: zhaochengcube
+      REPO_OWNER: cubezhao
       MAIN_REPO: augment-token-mng
     steps:
       - name: Checkout tap repo
@@ -70,10 +70,10 @@ jobs:
 
             arch arm: "aarch64", intel: "x64"
 
-            url "https://github.com/zhaochengcube/augment-token-mng/releases/download/v#{version}/ATM_#{version}_#{arch}.dmg"
+            url "https://github.com/cubezhao/augment-token-mng/releases/download/v#{version}/ATM_#{version}_#{arch}.dmg"
             name "ATM"
             desc "Augment Token Manager - Token management tool for Augment Code"
-            homepage "https://github.com/zhaochengcube/augment-token-mng"
+            homepage "https://github.com/cubezhao/augment-token-mng"
 
             sha256 arm:   "${SHA_ARM}",
                    intel: "${SHA_INT}"
